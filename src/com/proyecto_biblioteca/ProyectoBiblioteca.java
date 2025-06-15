@@ -8,15 +8,17 @@ import com.proyecto_biblioteca.procesos.Biblioteca;
 import com.proyecto_biblioteca.objetos.*;
 import com.proyecto_biblioteca.excepciones.*;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 /**
  * Proyecto de administración de una biblioteca
+ * 
  * @author jennifer y guiselle
  */
 
 public class ProyectoBiblioteca {
     static Biblioteca biblioteca = new Biblioteca();
-    
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -25,7 +27,7 @@ public class ProyectoBiblioteca {
         int opcionMenu;
         do {
             opcionMenu = mostrarMenu(scanner);
-            switch(opcionMenu) {
+            switch (opcionMenu) {
                 case 0:
                     System.out.println("\n\n==================== SALIR =====================");
                     System.out.println("Saliendo...\n¡Muchas gracias por su visita!");
@@ -56,7 +58,6 @@ public class ProyectoBiblioteca {
         scanner.close();
     }
 
-
     static int mostrarMenu(Scanner scanner) {
         System.out.println("\n\n===================== MENÚ =====================");
         System.out.println("(1) Préstamos");
@@ -83,7 +84,7 @@ public class ProyectoBiblioteca {
                 } else {
                     System.out.println("El número ingresado no es válido." + mensajeOpciones);
                 }
-            } catch (java.util.InputMismatchException e) {
+            } catch (InputMismatchException e) {
                 System.out.println("La entrada no es válida." + mensajeOpciones);
             } finally {
                 scanner.nextLine();
@@ -93,71 +94,61 @@ public class ProyectoBiblioteca {
         return opcion;
     }
 
+    static void prestamo(Scanner scanner) {
+        prestamo(scanner, null);
+    }
 
-    static void prestamo(Scanner scanner){
+    static void prestamo(Scanner scanner, String titulo) {
         System.out.println("\n\n=================== PRÉSTAMOS ==================");
+
         if (biblioteca.bibliotecaVacia()) {
             System.out.println("Lo sentimos. Aún no hay libros en la biblioteca.");
             System.out.println("Ahora regresará al menú.");
             return;
         }
 
-        System.out.print("Ingrese el título del libro que necesita: ");
-        String titulo = scanner.nextLine().trim().toUpperCase();
-        String rut = "";
+        if (titulo == null) {
+            System.out.print("Ingrese el título del libro que necesita: ");
+            titulo = scanner.nextLine().trim().toUpperCase();
+        }
+
         try {
-            if (biblioteca.buscarLibro(titulo).isDisponible()){
-                rut = procesarRut(scanner);
+            if (biblioteca.buscarLibro(titulo).isDisponible()) {
+                String rut = procesarRut(scanner);
                 if (biblioteca.buscarUsuario(rut) == null) {
                     System.out.println("El usuario no se encuentra registrado.");
                     System.out.println("Ahora irá a registrarse para continuar con la operación.");
                     agregarUsuario(scanner, rut);
+
                 }
+                biblioteca.prestarLibro(titulo, rut);
             }
-            biblioteca.prestarLibro(titulo, rut);
+
         } catch (LibroNoEncontradoException | LibroYaPrestadoException e) {
             System.out.println(e.getMessage());
             System.out.println("Ahora regresará al menú.");
         }
     }
-
-
-    static void prestamo(Scanner scanner, String titulo) {
-        System.out.println("\n\n=================== PRÉSTAMOS ==================");
-
-        String rut = procesarRut(scanner);
-        if (biblioteca.buscarUsuario(rut) == null) {
-            System.out.println("El usuario no se encuentra registrado.");
-            System.out.println("Ahora irá a registrarse para continuar con la operación.");
-            agregarUsuario(scanner, rut);
-        }
-
-        try{
-            biblioteca.prestarLibro(titulo, rut);
-        } catch (LibroNoEncontradoException | LibroYaPrestadoException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Ahora regresará al menú.");
-        }
-    }
-
 
     static void devolucion(Scanner scanner) {
         System.out.println("\n\n================== DEVOLUCIONES ================");
-        
+
         String rut = procesarRut(scanner);
-        if (biblioteca.buscarUsuario(rut) == null) {
-            System.out.println("El usuario no se encuentra registrado. Por lo tanto no tiene libros que devolver.\nAhora regresará al menú.");
+
+        Usuario usuario = biblioteca.buscarUsuario(rut);
+        if (usuario == null) {
+            System.out.println(
+                    "El usuario no se encuentra registrado. Por lo tanto no tiene libros que devolver.\nAhora regresará al menú.");
             return;
         }
 
-        if (biblioteca.prestamosPorUsuario(biblioteca.buscarUsuario(rut))) {
+        if (biblioteca.prestamosPorUsuario(usuario)) {
             System.out.print("\nIngrese el título del libro que desea devolver: ");
             String titulo = scanner.nextLine().trim().toUpperCase();
             biblioteca.devolverLibro(titulo, rut);
         }
 
     }
-
 
     static void verLibros() {
         System.out.println("\n\n================== VER LIBROS ==================");
@@ -169,7 +160,6 @@ public class ProyectoBiblioteca {
         }
     }
 
-
     static void buscarLibro(Scanner scanner) {
         System.out.println("\n\n================= BUSCAR LIBRO =================");
 
@@ -180,8 +170,8 @@ public class ProyectoBiblioteca {
 
         System.out.print("Ingrese el titulo del libro que busca: ");
         String titulo = scanner.nextLine().trim().toUpperCase();
-        Libro libro;
-        try{
+        Libro libro = null;
+        try {
             libro = biblioteca.buscarLibro(titulo);
         } catch (LibroNoEncontradoException e) {
             System.out.println(e.getMessage());
@@ -224,17 +214,16 @@ public class ProyectoBiblioteca {
         System.out.println("Ahora regresará al menú.");
     }
 
-
     static void agregarLibros(Scanner scanner) {
         System.out.println("\n\n================ AGREGAR LIBROS ================");
         boolean opcionAgregar = false;
-        do {            
+        do {
             System.out.println("\nIngrese los siguientes datos del libro que desea agregar:");
             System.out.print("-> Título: ");
             String titulo = scanner.nextLine().trim().toUpperCase();
             System.out.print("-> Autor/a: ");
             String autor = scanner.nextLine().trim().toUpperCase();
-            
+
             if (biblioteca.libroExiste(titulo)) {
                 return;
             }
@@ -270,28 +259,9 @@ public class ProyectoBiblioteca {
         } while (!opcionAgregar);
     }
 
-
     static void agregarUsuario(Scanner scanner) {
-        System.out.println("\n\n================ AGREGAR USUARIO ===============");
-        System.out.println("Para registrarse debera ingresar los siguientes datos:");
-
-        System.out.print("-> Nombre: ");
-        String nombre = scanner.nextLine().trim();
-
-        System.out.print("-> Apellido: ");
-        String apellido = scanner.nextLine().trim();
-
-        String rut = procesarRut(scanner);
-        if (biblioteca.buscarUsuario(rut) != null) {
-            System.out.println("El usuario ya se encuentra registrado.\nAhora regresará al menú.");
-            return;
-        }
-
-        Usuario usuario = new Usuario(nombre, apellido, rut);
-        biblioteca.registrarUsuario(usuario);
-        System.out.println("\n" + usuario.toString() + " ¡Registrado con éxito!");
+        agregarUsuario(scanner, null);
     }
-
 
     static void agregarUsuario(Scanner scanner, String rut) {
         System.out.println("\n\n================ AGREGAR USUARIO ===============");
@@ -303,11 +273,19 @@ public class ProyectoBiblioteca {
         System.out.print("-> Apellido: ");
         String apellido = scanner.nextLine().trim();
 
+        if (rut == null) {
+            rut = procesarRut(scanner);
+        }
+
+        if (biblioteca.buscarUsuario(rut) != null) {
+            System.out.println("El usuario ya se encuentra registrado.\nAhora regresará al menú.");
+            return;
+        }
+
         Usuario usuario = new Usuario(nombre, apellido, rut);
         biblioteca.registrarUsuario(usuario);
-        System.out.println(usuario.toString() + " ¡Registrado con éxito!");
+        System.out.println("\n" + usuario.toString() + " ¡Registrado con éxito!");
     }
-
 
     static void buscarUsuario(Scanner scanner) {
         System.out.println("\n\n================ BUSCAR USUARIO ================");
@@ -327,7 +305,6 @@ public class ProyectoBiblioteca {
         System.out.println("Usuario encontrado -> " + usuario.toString());
         biblioteca.prestamosPorUsuario(usuario);
     }
-
 
     static String procesarRut(Scanner scanner) {
         boolean rutValido = false;

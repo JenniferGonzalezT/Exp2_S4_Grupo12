@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Clase Biblioteca
+ * 
  * @author jennifer y guiselle
  */
 
@@ -19,12 +20,10 @@ public class Biblioteca {
     private List<Libro> libros;
     private HashMap<Usuario, List<Libro>> usuarios;
 
-
     public Biblioteca() {
         this.libros = new ArrayList<>();
         this.usuarios = new HashMap<>();
     }
-
 
     public List<Libro> getLibros() {
         return libros;
@@ -42,7 +41,6 @@ public class Biblioteca {
         this.usuarios = usuarios;
     }
 
-
     public void agregarLibro(Libro libro) {
         libros.add(libro);
     }
@@ -55,7 +53,7 @@ public class Biblioteca {
         }
         throw new LibroNoEncontradoException("Lo sentimos. El libro que busca no está en la biblioteca.");
     }
-    
+
     public boolean libroExiste(String titulo) {
         for (Libro libro : libros) {
             if (libro.getTitulo().equals(titulo)) {
@@ -66,16 +64,16 @@ public class Biblioteca {
         return false;
     }
 
-    public void mostrarLibros(){
+    public void mostrarLibros() {
         for (Libro libro : libros) {
             System.out.println(libro.toString());
         }
     }
-    
+
     public boolean bibliotecaVacia() {
         return libros.isEmpty();
     }
-    
+
     public boolean usuariosVacia() {
         return usuarios.isEmpty();
     }
@@ -84,7 +82,7 @@ public class Biblioteca {
         usuarios.put(usuario, new ArrayList<>());
     }
 
-    public Usuario buscarUsuario(String rut){
+    public Usuario buscarUsuario(String rut) {
         for (Usuario usuario : usuarios.keySet()) {
             if (usuario.getRut().equals(rut)) {
                 return usuario;
@@ -92,7 +90,7 @@ public class Biblioteca {
         }
         return null;
     }
-    
+
     public boolean prestamosPorUsuario(Usuario usuario) {
         if (usuarios.get(usuario).isEmpty()) {
             System.out.println("No tiene libros en préstamo.");
@@ -106,33 +104,47 @@ public class Biblioteca {
         }
     }
 
+    public void prestarLibro(String titulo, String rut) throws LibroNoEncontradoException, LibroYaPrestadoException {
+        Libro libro = buscarLibro(titulo);
+        Usuario usuario = buscarUsuario(rut);
 
-    public void prestarLibro(String titulo, String rut) throws LibroNoEncontradoException, LibroYaPrestadoException{
-            Libro libro = buscarLibro(titulo);
-            Usuario usuario = buscarUsuario(rut);
+        if (usuario == null) {
+            System.out.println("El usuario con el RUT proporcionado no existe.");
+            return;
+        }
 
-            if (libro == null) {
-                throw new LibroNoEncontradoException("Lo sentimos. El libro que busca no está en la biblioteca.");
-            } else if (!libro.isDisponible()) {
-                throw new LibroYaPrestadoException("El libro no esta disponible para su préstamo.");
-            } else {
-                libro.setDisponible(false);
-                usuarios.get(usuario).add(libro);
-                System.out.println("¡Préstamo realizado con éxito!");
-            }
+        if (!libro.isDisponible()) {
+            throw new LibroYaPrestadoException("El libro no esta disponible para su préstamo.");
+        } else {
+            libro.setDisponible(false);
+            usuarios.get(usuario).add(libro);
+            System.out.println("¡Préstamo realizado con éxito!");
+        }
     }
 
     public void devolverLibro(String titulo, String rut) {
         Usuario usuario = buscarUsuario(rut);
+        if (usuario == null) {
+            System.out.println("El usuario con el RUT proporcionado no existe.");
+            System.out.println("Ahora regresará al menú.");
+            return;
+        }
         Libro libroADevolver = null;
-        
-        for (Libro libro : usuarios.get(usuario)) {
+
+        List<Libro> librosPrestados = usuarios.get(usuario);
+        if (librosPrestados == null) {
+            System.out.println("El usuario no tiene libros registrados para préstamo.");
+            System.out.println("Ahora regresará al menú.");
+            return;
+        }
+
+        for (Libro libro : librosPrestados) {
             if (libro.getTitulo().equals(titulo)) {
                 libroADevolver = libro;
                 break;
             }
         }
-        
+
         if (libroADevolver != null) {
             libroADevolver.setDisponible(true);
             usuarios.get(usuario).remove(libroADevolver);
