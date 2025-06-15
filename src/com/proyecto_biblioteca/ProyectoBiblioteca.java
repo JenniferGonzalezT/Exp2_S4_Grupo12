@@ -118,8 +118,10 @@ public class ProyectoBiblioteca {
                     System.out.println("El usuario no se encuentra registrado.");
                     System.out.println("Ahora irá a registrarse para continuar con la operación.");
                     agregarUsuario(scanner, rut);
-                    biblioteca.prestarLibro(titulo, rut);
+
                 }
+                biblioteca.prestarLibro(titulo, rut);
+                System.out.println("Libro prestado con éxito");
 
             }
 
