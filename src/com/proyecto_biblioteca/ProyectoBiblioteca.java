@@ -121,8 +121,6 @@ public class ProyectoBiblioteca {
 
                 }
                 biblioteca.prestarLibro(titulo, rut);
-                System.out.println("Libro prestado con éxito");
-
             }
 
         } catch (LibroNoEncontradoException | LibroYaPrestadoException e) {
