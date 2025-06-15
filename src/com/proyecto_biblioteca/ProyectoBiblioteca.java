@@ -8,6 +8,7 @@ import com.proyecto_biblioteca.procesos.Biblioteca;
 import com.proyecto_biblioteca.objetos.*;
 import com.proyecto_biblioteca.excepciones.*;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 /**
  * Proyecto de administración de una biblioteca
@@ -83,7 +84,7 @@ public class ProyectoBiblioteca {
                 } else {
                     System.out.println("El número ingresado no es válido." + mensajeOpciones);
                 }
-            } catch (java.util.InputMismatchException e) {
+            } catch (InputMismatchException e) {
                 System.out.println("La entrada no es válida." + mensajeOpciones);
             } finally {
                 scanner.nextLine();
